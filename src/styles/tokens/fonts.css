@@ -1,0 +1,9 @@
+/*
+  DM Sans is the only typeface in the system — no secondary face.
+  Loaded from Google Fonts in styles.css (the @import has to be the very
+  first rule in the bundled stylesheet, so it doesn't live in this file).
+  Swap for local @font-face declarations here if self-hosting later.
+*/
+@theme {
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+}

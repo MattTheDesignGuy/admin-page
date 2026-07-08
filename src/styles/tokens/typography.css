@@ -1,0 +1,35 @@
+:root {
+  --lh-heading: 1.05;
+  --lh-body: 1.6;
+}
+
+/* Headlines run tight and dense; body opens up for reading.
+   Each pair generates a Tailwind text-* utility with matching line-height. */
+@theme {
+  --text-display: clamp(2.25rem, 3.4vw, 3.5rem);
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 800;
+
+  --text-h1: clamp(1.75rem, 2.6vw, 2.25rem);
+  --text-h1--line-height: 1.05;
+  --text-h1--letter-spacing: -0.02em;
+  --text-h1--font-weight: 800;
+
+  --text-h2: 1.5rem;
+  --text-h2--line-height: 1.1;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h2--font-weight: 800;
+
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.15;
+  --text-h3--letter-spacing: -0.02em;
+  --text-h3--font-weight: 700;
+
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.4;
+  --text-eyebrow--letter-spacing: 0.08em;
+  --text-eyebrow--font-weight: 700;
+
+  --tracking-tight: -0.02em;
+}

@@ -1,0 +1,15 @@
+# Copy this file to .dev.vars for local development (never committed).
+# In production these are set with: wrangler pages secret put <NAME>
+
+# Login username (single hardcoded user)
+ADMIN_USERNAME=matt
+
+# Generate with: node scripts/hash-password.mjs "your-password-here"
+ADMIN_PASSWORD_HASH=
+
+# Random long string used to sign session cookies. Generate with:
+#   node -e "console.log(crypto.randomUUID()+crypto.randomUUID())"
+SESSION_SECRET=
+
+# Anthropic API key used server-side for document extraction
+ANTHROPIC_API_KEY=

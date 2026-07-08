@@ -1,0 +1,75 @@
+/*
+  Palette is drawn directly from the logo's own diagonal gradient.
+  Navy/Indigo carry structure and text. Purple/Cyan are accents only —
+  never large flat fills. Everything in @theme becomes a Tailwind utility
+  (bg-navy, text-ink-muted, border-hairline, shadow-glow, ...).
+*/
+
+/* Composed into --shadow-glow below; not meant as standalone utilities. */
+:root {
+  --glow-purple: rgba(102, 22, 189, 0.35);
+  --glow-cyan: rgba(84, 186, 215, 0.28);
+
+  /* Two gradients, two jobs — do not swap them. Not Tailwind color
+     utilities (gradients), applied via .bg-surface-gradient / .bg-action-gradient
+     in base.css. */
+  --gradient-surface: linear-gradient(135deg, #0F1A3A 0%, #3E2176 100%);
+  --gradient-action: linear-gradient(90deg, #205AFE 0%, #6930E8 100%);
+  --gradient-action-hover: linear-gradient(90deg, #3A6BFF 0%, #7E43EE 100%);
+}
+
+@theme {
+  /* Base palette */
+  --color-navy: #050D1D;
+  --color-indigo: #2E52AC;
+  --color-purple: #6616BD;
+  --color-cyan: #54BAD7;
+  --color-white: #FFFFFF;
+
+  /* Cool-navy neutral ramp — never warm or pure gray */
+  --color-neutral-50: #F5F7FB;
+  --color-neutral-100: #E9ECF5;
+  --color-neutral-200: #D3D9E8;
+  --color-neutral-300: #AEB8D1;
+  --color-neutral-400: #8089A8;
+  --color-neutral-500: #5C6685;
+  --color-neutral-600: #454E6B;
+  --color-neutral-700: #313852;
+  --color-neutral-800: #1E233A;
+  --color-neutral-900: #0F1324;
+
+  /* Semantic surfaces */
+  --color-surface-page: var(--color-white);
+  --color-surface-sunken: var(--color-neutral-50);
+  --color-surface-card: var(--color-white);
+
+  /* Hairline borders — never pure black */
+  --color-hairline: var(--color-neutral-300);
+  --color-hairline-subtle: var(--color-neutral-200);
+  --color-hairline-on-dark: rgba(255, 255, 255, 0.16);
+
+  /* Text */
+  --color-ink: var(--color-navy);
+  --color-ink-muted: var(--color-neutral-600);
+  --color-ink-faint: var(--color-neutral-400);
+  --color-ink-on-dark: var(--color-white);
+  --color-ink-on-dark-muted: rgba(255, 255, 255, 0.72);
+
+  /* Interactive: hover shifts along the brand gradient, Indigo -> Purple */
+  --color-link: var(--color-indigo);
+  --color-link-hover: var(--color-purple);
+
+  /* Feedback — kept cool-toned to sit with the rest of the palette */
+  --color-success: #1F9E7C;
+  --color-success-bg: #E6F7F1;
+  --color-danger: #D6455E;
+  --color-danger-bg: #FBEAEE;
+  --color-warning: #C9821E;
+  --color-warning-bg: #FBF1E2;
+
+  /* Shadows — soft, cool-toned (navy-tinted, never pure black) */
+  --shadow-sm: 0 1px 2px rgba(5, 13, 29, 0.06), 0 1px 1px rgba(5, 13, 29, 0.04);
+  --shadow-md: 0 6px 16px rgba(5, 13, 29, 0.10), 0 2px 4px rgba(5, 13, 29, 0.06);
+  --shadow-lg: 0 16px 40px rgba(5, 13, 29, 0.18), 0 4px 10px rgba(5, 13, 29, 0.08);
+  --shadow-glow: 0 0 48px var(--glow-purple), 0 0 96px var(--glow-cyan);
+}
