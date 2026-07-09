@@ -28,7 +28,7 @@ npm run pages:dev                                        # builds + runs the ful
 | `SESSION_SECRET` | any long random string |
 | `ANTHROPIC_API_KEY` | an Anthropic API key — extraction returns a 503 until this is set |
 
-## Deploying to Cloudflare (`admin.thedesignguy.com.au`)
+## Deploying to Cloudflare
 
 **Live at:** https://tdg-admin-page.pages.dev — D1 database, R2 bucket, Pages project, and all four secrets (`ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `ANTHROPIC_API_KEY`) are provisioned on the real Cloudflare account.
 
@@ -44,7 +44,9 @@ npx wrangler pages deploy dist --project-name=tdg-admin-page
 npx wrangler pages secret put SECRET_NAME --project-name=tdg-admin-page
 ```
 
-**Custom domain (`admin.thedesignguy.com.au`) — remaining step:** in the Cloudflare dashboard, open the **tdg-admin-page** project → **Domains** tab → **Set up a custom domain** → enter `admin.thedesignguy.com.au`. It gives a CNAME target; add that as a CNAME record for `admin` in GoDaddy DNS (nameservers stay on GoDaddy — no need to migrate DNS to Cloudflare). Confirm `https://admin.thedesignguy.com.au` loads with a valid certificate before treating it as live.
+**Custom domain (`admin.thedesignguy.com.au`) — deliberately deferred.** Cloudflare's custom-domain feature requires the domain to be an active Cloudflare DNS zone (nameservers pointed at Cloudflare) before it will issue a certificate — a plain CNAME at GoDaddy isn't sufficient on its own. Since `thedesignguy.com.au`'s DNS (including the main site on GitHub Pages, and any email records) currently lives on GoDaddy, moving nameservers is a real decision, not a quick step, so it's on hold for now and the app runs on the `.pages.dev` URL above.
+
+If/when ready to do it: in the Cloudflare dashboard, add `thedesignguy.com.au` as a zone (**Onboard domain**), let Cloudflare import the existing GoDaddy DNS records, carefully verify every record (site, email, anything else) matches before switching nameservers at GoDaddy, then set up the custom domain on the `tdg-admin-page` project as normal.
 
 **Git-connected auto-deploy:** a GitHub integration exists on the Pages project but its auto-generated build token is under-permissioned (missing Cloudflare Pages edit access), so pushes to `main` don't currently auto-deploy — redeploy manually with the command above, or fix the token's permissions in the project's Settings → Build → API token.
 
