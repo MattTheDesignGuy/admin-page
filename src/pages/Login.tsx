@@ -33,8 +33,7 @@ export function Login() {
           <Logo className="h-7 w-auto" />
         </div>
         <Card className="p-6 shadow-glow">
-          <h1 className="text-h2 mb-1">Admin login</h1>
-          <p className="mb-6 text-sm text-ink-muted">Income &amp; expense tracker for The Design Guy.</p>
+          <h1 className="text-h2 mb-6">Admin login</h1>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="username" className="text-sm font-medium text-ink">
