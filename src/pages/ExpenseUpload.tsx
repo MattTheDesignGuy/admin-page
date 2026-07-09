@@ -7,6 +7,7 @@ import { Textarea } from '@/components/Textarea'
 import { Select } from '@/components/Select'
 import { Button } from '@/components/Button'
 import { useToast } from '@/components/Toast'
+import { DuplicateWarning, type DuplicateCheck } from '@/components/DuplicateWarning'
 import { api, ApiError } from '@/lib/api'
 import { EXPENSE_CATEGORIES } from '@/lib/format'
 
@@ -37,11 +38,13 @@ export function ExpenseUpload() {
   const [extracting, setExtracting] = useState(false)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState<ExpenseForm | null>(null)
+  const [duplicate, setDuplicate] = useState<DuplicateCheck | null>(null)
 
   const handleFile = async (selected: File) => {
     setFile(selected)
     setExtracting(true)
     setForm(null)
+    setDuplicate(null)
     try {
       const body = new FormData()
       body.append('file', selected)
@@ -56,6 +59,7 @@ export function ExpenseUpload() {
           description: string | null
         }
         mocked?: boolean
+        duplicate?: DuplicateCheck
       }>('/api/extract/expense', body)
       const e = res.extraction
       setForm({
@@ -67,6 +71,7 @@ export function ExpenseUpload() {
         category: e.category ?? EXPENSE_CATEGORIES[0],
         description: e.description ?? '',
       })
+      setDuplicate(res.duplicate ?? null)
       if (res.mocked) {
         show({
           tone: 'warning',
@@ -132,6 +137,7 @@ export function ExpenseUpload() {
       {form && (
         <Card className="p-6">
           <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
+            {duplicate && <DuplicateWarning duplicate={duplicate} />}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Vendor">
                 <Input value={form.counterparty} onChange={(e) => setForm({ ...form, counterparty: e.target.value })} required />

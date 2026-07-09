@@ -11,6 +11,7 @@ export interface TdgRecord {
   reference: string | null
   file_key: string | null
   file_name: string | null
+  file_hash: string | null
   created_at: string
   updated_at: string
 }

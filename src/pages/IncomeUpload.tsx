@@ -7,6 +7,7 @@ import { Textarea } from '@/components/Textarea'
 import { Select } from '@/components/Select'
 import { Button } from '@/components/Button'
 import { useToast } from '@/components/Toast'
+import { DuplicateWarning, type DuplicateCheck } from '@/components/DuplicateWarning'
 import { api, ApiError } from '@/lib/api'
 
 interface IncomeForm {
@@ -36,11 +37,13 @@ export function IncomeUpload() {
   const [extracting, setExtracting] = useState(false)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState<IncomeForm | null>(null)
+  const [duplicate, setDuplicate] = useState<DuplicateCheck | null>(null)
 
   const handleFile = async (selected: File) => {
     setFile(selected)
     setExtracting(true)
     setForm(null)
+    setDuplicate(null)
     try {
       const body = new FormData()
       body.append('file', selected)
@@ -55,6 +58,7 @@ export function IncomeUpload() {
           description: string | null
         }
         mocked?: boolean
+        duplicate?: DuplicateCheck
       }>('/api/extract/income', body)
       const e = res.extraction
       setForm({
@@ -66,6 +70,7 @@ export function IncomeUpload() {
         gst_amount: e.gst_amount?.toString() ?? '',
         description: e.description ?? '',
       })
+      setDuplicate(res.duplicate ?? null)
       if (res.mocked) {
         show({
           tone: 'warning',
@@ -131,6 +136,7 @@ export function IncomeUpload() {
       {form && (
         <Card className="p-6">
           <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
+            {duplicate && <DuplicateWarning duplicate={duplicate} />}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Client">
                 <Input value={form.counterparty} onChange={(e) => setForm({ ...form, counterparty: e.target.value })} required />

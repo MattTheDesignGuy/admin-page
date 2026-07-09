@@ -3,6 +3,8 @@ import { json, jsonError } from '../../lib/http'
 import { arrayBufferToBase64 } from '../../lib/base64'
 import { extractStructuredFields } from '../../lib/anthropic'
 import { mockIncomeExtraction } from '../../lib/mock-extraction'
+import { sha256Hex } from '../../lib/hash'
+import { findFileHashMatch, findSimilarMatch, type DuplicateCheck } from '../../lib/duplicates'
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024
 
@@ -26,11 +28,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return jsonError(400, 'File is too large (max 15MB)')
   }
 
+  const buffer = await file.arrayBuffer()
+  const fileHash = await sha256Hex(buffer)
+  const fileMatch = await findFileHashMatch(env, fileHash)
+
   if (!env.ANTHROPIC_API_KEY) {
-    return json({ extraction: mockIncomeExtraction(), mocked: true })
+    const extraction = mockIncomeExtraction()
+    const duplicate: DuplicateCheck = { fileMatch, similarMatch: null }
+    return json({ extraction, mocked: true, duplicate })
   }
 
-  const buffer = await file.arrayBuffer()
   const base64 = arrayBufferToBase64(buffer)
 
   try {
@@ -59,7 +66,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       'This is a tax invoice issued by The Design Guy to a client. Extract the invoice number, client name, invoice date, total amount, GST status, GST amount, and a short description of the work.',
     )
 
-    return json({ extraction: extracted })
+    const similarMatch =
+      extracted.client && extracted.date && extracted.amount != null
+        ? await findSimilarMatch(env, 'income', extracted.client, extracted.date, extracted.amount)
+        : null
+    const duplicate: DuplicateCheck = { fileMatch, similarMatch }
+
+    return json({ extraction: extracted, duplicate })
   } catch (err) {
     return jsonError(502, `Extraction failed: ${err instanceof Error ? err.message : 'unknown error'}`)
   }

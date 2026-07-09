@@ -1,5 +1,6 @@
 import type { Env, GstStatus, RecordType } from '../../lib/types'
 import { json, jsonError } from '../../lib/http'
+import { sha256Hex } from '../../lib/hash'
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   const { results } = await env.DB.prepare('SELECT * FROM records ORDER BY date DESC, created_at DESC').all()
@@ -39,12 +40,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const id = crypto.randomUUID()
   let fileKey: string | null = null
   let fileName: string | null = null
+  let fileHash: string | null = null
 
   const file = form.get('file')
   if (file instanceof File) {
+    const buffer = await file.arrayBuffer()
     fileKey = `records/${id}/${file.name}`
     fileName = file.name
-    await env.FILES.put(fileKey, await file.arrayBuffer(), {
+    fileHash = await sha256Hex(buffer)
+    await env.FILES.put(fileKey, buffer, {
       httpMetadata: { contentType: file.type || 'application/octet-stream' },
     })
   }
@@ -53,8 +57,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   await env.DB.prepare(
     `INSERT INTO records
-      (id, type, date, counterparty, description, amount, gst_status, gst_amount, category, reference, file_key, file_name, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, type, date, counterparty, description, amount, gst_status, gst_amount, category, reference, file_key, file_name, file_hash, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -69,6 +73,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       reference,
       fileKey,
       fileName,
+      fileHash,
       now,
       now,
     )
