@@ -1,11 +1,19 @@
 /** Australian financial year: 1 Jul - 30 Jun */
-export function currentFinancialYear(now = new Date()): { start: string; end: string; label: string } {
-  const year = now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1
+export function financialYearFromStartYear(year: number): { start: string; end: string; label: string; startYear: number } {
   return {
     start: `${year}-07-01`,
     end: `${year + 1}-06-30`,
     label: `FY${String(year + 1).slice(-2)}`,
+    startYear: year,
   }
+}
+
+export function currentFinancialYearStartYear(now = new Date()): number {
+  return now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1
+}
+
+export function currentFinancialYear(now = new Date()): { start: string; end: string; label: string; startYear: number } {
+  return financialYearFromStartYear(currentFinancialYearStartYear(now))
 }
 
 /** The 12 "YYYY-MM" months spanning a financial year, July first. */

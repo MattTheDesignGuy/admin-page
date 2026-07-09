@@ -32,12 +32,14 @@ export async function verifySessionToken(env: Env, token: string): Promise<Sessi
   }
 }
 
-export function sessionCookie(token: string): string {
-  return `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_TTL_MS / 1000}`
+export function sessionCookie(token: string, secure: boolean): string {
+  const secureAttr = secure ? '; Secure' : ''
+  return `${SESSION_COOKIE}=${token}; Path=/; HttpOnly${secureAttr}; SameSite=Strict; Max-Age=${SESSION_TTL_MS / 1000}`
 }
 
-export function clearSessionCookie(): string {
-  return `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`
+export function clearSessionCookie(secure: boolean): string {
+  const secureAttr = secure ? '; Secure' : ''
+  return `${SESSION_COOKIE}=; Path=/; HttpOnly${secureAttr}; SameSite=Strict; Max-Age=0`
 }
 
 export function readSessionCookie(request: Request): string | null {

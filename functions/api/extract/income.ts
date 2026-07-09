@@ -2,6 +2,7 @@ import type { Env } from '../../lib/types'
 import { json, jsonError } from '../../lib/http'
 import { arrayBufferToBase64 } from '../../lib/base64'
 import { extractStructuredFields } from '../../lib/anthropic'
+import { mockIncomeExtraction } from '../../lib/mock-extraction'
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024
 
@@ -16,10 +17,6 @@ interface IncomeExtraction {
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  if (!env.ANTHROPIC_API_KEY) {
-    return jsonError(503, 'Document extraction is not configured yet — add ANTHROPIC_API_KEY.')
-  }
-
   const form = await request.formData()
   const file = form.get('file')
   if (!(file instanceof File)) {
@@ -27,6 +24,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
   if (file.size > MAX_FILE_BYTES) {
     return jsonError(400, 'File is too large (max 15MB)')
+  }
+
+  if (!env.ANTHROPIC_API_KEY) {
+    return json({ extraction: mockIncomeExtraction(), mocked: true })
   }
 
   const buffer = await file.arrayBuffer()

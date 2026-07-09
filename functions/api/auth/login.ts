@@ -31,9 +31,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   const token = await createSessionToken(env, username)
+  const isSecure = new URL(request.url).protocol === 'https:'
 
   return json(
     { username },
-    { headers: { 'Set-Cookie': sessionCookie(token) } },
+    { headers: { 'Set-Cookie': sessionCookie(token, isSecure) } },
   )
 }

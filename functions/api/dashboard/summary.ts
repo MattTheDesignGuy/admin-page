@@ -1,6 +1,10 @@
 import type { Env } from '../../lib/types'
 import { json } from '../../lib/http'
-import { currentFinancialYear, financialYearMonths } from '../../lib/financial-year'
+import {
+  currentFinancialYearStartYear,
+  financialYearFromStartYear,
+  financialYearMonths,
+} from '../../lib/financial-year'
 
 interface TypeTotalsRow {
   type: 'income' | 'expense'
@@ -14,8 +18,12 @@ interface MonthlyRow {
   total: number | null
 }
 
-export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
-  const fy = currentFinancialYear()
+export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+  const currentStartYear = currentFinancialYearStartYear()
+  const yearParam = new URL(request.url).searchParams.get('year')
+  const requestedYear = yearParam ? Number(yearParam) : currentStartYear
+  const startYear = Number.isFinite(requestedYear) ? requestedYear : currentStartYear
+  const fy = financialYearFromStartYear(startYear)
 
   const [{ results: totalsRows }, { results: monthlyRows }] = await Promise.all([
     env.DB.prepare(
@@ -48,6 +56,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
 
   return json({
     fy,
+    isCurrent: startYear === currentStartYear,
     totals: {
       income: income?.total ?? 0,
       expense: expense?.total ?? 0,

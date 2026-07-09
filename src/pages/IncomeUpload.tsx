@@ -54,6 +54,7 @@ export function IncomeUpload() {
           gst_amount: number | null
           description: string | null
         }
+        mocked?: boolean
       }>('/api/extract/income', body)
       const e = res.extraction
       setForm({
@@ -65,7 +66,15 @@ export function IncomeUpload() {
         gst_amount: e.gst_amount?.toString() ?? '',
         description: e.description ?? '',
       })
-      show({ tone: 'success', title: 'Fields extracted', description: 'Check them over before saving.' })
+      if (res.mocked) {
+        show({
+          tone: 'warning',
+          title: 'Using sample data',
+          description: 'No ANTHROPIC_API_KEY set — add one to extract real fields. Edit the sample below and save as normal.',
+        })
+      } else {
+        show({ tone: 'success', title: 'Fields extracted', description: 'Check them over before saving.' })
+      }
     } catch (err) {
       setForm({ ...emptyForm })
       show({
