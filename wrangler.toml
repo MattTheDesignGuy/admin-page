@@ -3,12 +3,10 @@ compatibility_date = "2026-07-08"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
-# Replace database_id with the real one after running:
-#   wrangler d1 create tdg-admin-db
 [[d1_databases]]
 binding = "DB"
 database_name = "tdg-admin-db"
-database_id = "local-dev"
+database_id = "eb1280df-7939-40a6-87de-8b2e8b24f10b"
 
 # Create the real bucket after account setup with:
 #   wrangler r2 bucket create tdg-admin-files
