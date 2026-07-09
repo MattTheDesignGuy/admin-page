@@ -30,36 +30,23 @@ npm run pages:dev                                        # builds + runs the ful
 
 ## Deploying to Cloudflare (`admin.thedesignguy.com.au`)
 
-None of this has been run yet — it needs your Cloudflare account.
+**Live at:** https://tdg-admin-page.pages.dev — D1 database, R2 bucket, Pages project, and all four secrets (`ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `ANTHROPIC_API_KEY`) are provisioned on the real Cloudflare account.
 
-1. **Create a Cloudflare account** if you don't have one, and install Wrangler CLI auth locally: `npx wrangler login` (opens a browser).
-2. **Create the real D1 database and R2 bucket:**
-   ```bash
-   npx wrangler d1 create tdg-admin-db
-   ```
-   Copy the `database_id` it prints into `wrangler.toml` (replacing `"local-dev"`).
-   ```bash
-   npx wrangler r2 bucket create tdg-admin-files
-   ```
-3. **Apply the migration to the real database:**
-   ```bash
-   npx wrangler d1 migrations apply tdg-admin-db --remote
-   ```
-4. **Create the Pages project** (from this repo):
-   ```bash
-   npm run build
-   npx wrangler pages project create tdg-admin
-   npx wrangler pages deploy dist --project-name=tdg-admin
-   ```
-   Or connect the GitHub repo to Cloudflare Pages in the dashboard for git-push deploys — same build command (`npm run build`) and output directory (`dist`).
-5. **Set the production secrets** (never commit these):
-   ```bash
-   npx wrangler pages secret put ADMIN_USERNAME --project-name=tdg-admin
-   npx wrangler pages secret put ADMIN_PASSWORD_HASH --project-name=tdg-admin
-   npx wrangler pages secret put SESSION_SECRET --project-name=tdg-admin
-   npx wrangler pages secret put ANTHROPIC_API_KEY --project-name=tdg-admin
-   ```
-6. **Point the subdomain at Cloudflare Pages:** in GoDaddy DNS, add a CNAME record `admin` → the `*.pages.dev` target Cloudflare gives the project (or follow Cloudflare's custom domain flow from the Pages project settings, which issues HTTPS automatically). Confirm `https://admin.thedesignguy.com.au` loads and shows a valid certificate before treating it as live.
+**To redeploy after a code change:**
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name=tdg-admin-page
+```
+(Requires `wrangler login`, or a `CLOUDFLARE_API_TOKEN` env var set to a token with Cloudflare Pages / D1 / Workers R2 Storage / Workers Scripts edit permissions.)
+
+**To update a secret:**
+```bash
+npx wrangler pages secret put SECRET_NAME --project-name=tdg-admin-page
+```
+
+**Custom domain (`admin.thedesignguy.com.au`) — remaining step:** in the Cloudflare dashboard, open the **tdg-admin-page** project → **Domains** tab → **Set up a custom domain** → enter `admin.thedesignguy.com.au`. It gives a CNAME target; add that as a CNAME record for `admin` in GoDaddy DNS (nameservers stay on GoDaddy — no need to migrate DNS to Cloudflare). Confirm `https://admin.thedesignguy.com.au` loads with a valid certificate before treating it as live.
+
+**Git-connected auto-deploy:** a GitHub integration exists on the Pages project but its auto-generated build token is under-permissioned (missing Cloudflare Pages edit access), so pushes to `main` don't currently auto-deploy — redeploy manually with the command above, or fix the token's permissions in the project's Settings → Build → API token.
 
 ## Project structure
 
