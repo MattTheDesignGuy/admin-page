@@ -10,7 +10,7 @@ import { IconButton } from '@/components/IconButton'
 import { useToast } from '@/components/Toast'
 import { api, ApiError } from '@/lib/api'
 import { formatCurrency } from '@/lib/format'
-import { calculateTotals, type LineItemDraft } from '@/lib/invoice-calc'
+import { calculateTotals, round2, type LineItemDraft } from '@/lib/invoice-calc'
 import type { TdgRecord } from '@/lib/records'
 
 interface LineItemForm {
@@ -67,6 +67,7 @@ export function InvoiceBuilder() {
   const [addressLines, setAddressLines] = useState('')
   const [lineItems, setLineItems] = useState<LineItemForm[]>([emptyLineItem()])
   const [deposit, setDeposit] = useState('')
+  const [depositPercent, setDepositPercent] = useState('')
   const [depositLabel, setDepositLabel] = useState('Less: Discount.')
   const [previewing, setPreviewing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -91,6 +92,26 @@ export function InvoiceBuilder() {
     () => calculateTotals(parsedLineItems, Number(deposit) || 0),
     [parsedLineItems, deposit],
   )
+
+  const handleDepositAmountChange = (value: string) => {
+    setDeposit(value)
+    const amount = Number(value)
+    if (!value || Number.isNaN(amount) || totals.subtotal <= 0) {
+      setDepositPercent('')
+      return
+    }
+    setDepositPercent(String(round2((amount / totals.subtotal) * 100)))
+  }
+
+  const handleDepositPercentChange = (value: string) => {
+    setDepositPercent(value)
+    const percent = Number(value)
+    if (!value || Number.isNaN(percent) || totals.subtotal <= 0) {
+      setDeposit('')
+      return
+    }
+    setDeposit(String(round2(totals.subtotal * (percent / 100))))
+  }
 
   const handleBusinessNameBlur = () => {
     const match = clients.find((c) => c.business_name.toLowerCase() === businessName.trim().toLowerCase())
@@ -311,9 +332,22 @@ export function InvoiceBuilder() {
 
       <Card className="flex flex-col gap-4 p-6">
         <h2 className="text-h3">Discount (optional)</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label="Discount amount">
-            <Input type="number" step="0.01" value={deposit} onChange={(e) => setDeposit(e.target.value)} />
+            <Input
+              type="number"
+              step="0.01"
+              value={deposit}
+              onChange={(e) => handleDepositAmountChange(e.target.value)}
+            />
+          </Field>
+          <Field label="Discount %">
+            <Input
+              type="number"
+              step="0.01"
+              value={depositPercent}
+              onChange={(e) => handleDepositPercentChange(e.target.value)}
+            />
           </Field>
           <Field label="Label">
             <Input value={depositLabel} onChange={(e) => setDepositLabel(e.target.value)} disabled={!deposit} />

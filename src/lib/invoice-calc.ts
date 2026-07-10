@@ -20,6 +20,6 @@ export function calculateTotals(lineItems: LineItemDraft[], deposit: number): In
   return { subtotal, gstTotal, total, amountDue }
 }
 
-function round2(value: number): number {
+export function round2(value: number): number {
   return Math.round(value * 100) / 100
 }
