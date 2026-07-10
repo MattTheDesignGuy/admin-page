@@ -12,6 +12,7 @@ import { RecordEditDialog } from '@/components/RecordEditDialog'
 import { useToast } from '@/components/Toast'
 import { api, ApiError } from '@/lib/api'
 import { formatCurrency, formatDate, EXPENSE_CATEGORIES } from '@/lib/format'
+import { currentFinancialYearStartYear, fyLabel } from '@/lib/financial-year'
 import type { TdgRecord } from '@/lib/records'
 
 type SortKey = 'date' | 'counterparty' | 'amount'
@@ -21,6 +22,7 @@ export function Ledger() {
   const [records, setRecords] = useState<TdgRecord[] | null>(null)
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [fyFilter, setFyFilter] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [query, setQuery] = useState('')
@@ -58,6 +60,21 @@ export function Ledger() {
         return a[sort.key] < b[sort.key] ? -dir : a[sort.key] > b[sort.key] ? dir : 0
       })
   }, [records, typeFilter, categoryFilter, from, to, query, sort])
+
+  const fyOptions = useMemo(() => {
+    const currentStart = currentFinancialYearStartYear()
+    const years: number[] = []
+    for (let y = currentStart + 1; y >= currentStart - 8; y--) years.push(y)
+    return years
+  }, [])
+
+  const handleFyChange = (value: string) => {
+    setFyFilter(value)
+    if (!value) return
+    const startYear = Number(value)
+    setFrom(`${startYear}-07-01`)
+    setTo(`${startYear + 1}-06-30`)
+  }
 
   const toggleSort = (key: SortKey) => {
     setSort((prev) => (prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' }))
@@ -129,11 +146,35 @@ export function Ledger() {
             ))}
           </Select>
         </FilterField>
+        <FilterField label="FY">
+          <Select value={fyFilter} onChange={(e) => handleFyChange(e.target.value)}>
+            <option value="">All</option>
+            {fyOptions.map((y) => (
+              <option key={y} value={y}>
+                {fyLabel(y)}
+              </option>
+            ))}
+          </Select>
+        </FilterField>
         <FilterField label="From">
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <Input
+            type="date"
+            value={from}
+            onChange={(e) => {
+              setFrom(e.target.value)
+              setFyFilter('')
+            }}
+          />
         </FilterField>
         <FilterField label="To">
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <Input
+            type="date"
+            value={to}
+            onChange={(e) => {
+              setTo(e.target.value)
+              setFyFilter('')
+            }}
+          />
         </FilterField>
         <FilterField label="Search" className="min-w-48 flex-1">
           <Input placeholder="Client, vendor, description…" value={query} onChange={(e) => setQuery(e.target.value)} />
