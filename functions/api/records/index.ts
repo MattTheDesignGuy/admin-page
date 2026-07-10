@@ -37,6 +37,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const reference = optionalString(form.get('reference'))
   const gstAmount = Number(form.get('gst_amount') ?? 0) || 0
   const paid = form.get('paid') === '0' ? 0 : 1
+  const amountPaid = paid ? Number(amount) : 0
 
   const id = crypto.randomUUID()
   let fileKey: string | null = null
@@ -58,8 +59,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   await env.DB.prepare(
     `INSERT INTO records
-      (id, type, date, counterparty, description, amount, gst_status, gst_amount, category, reference, file_key, file_name, file_hash, paid, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, type, date, counterparty, description, amount, gst_status, gst_amount, category, reference, file_key, file_name, file_hash, paid, amount_paid, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -76,6 +77,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       fileName,
       fileHash,
       paid,
+      amountPaid,
       now,
       now,
     )

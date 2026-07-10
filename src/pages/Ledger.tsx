@@ -9,6 +9,7 @@ import { IconButton } from '@/components/IconButton'
 import { Badge } from '@/components/Badge'
 import { Dialog } from '@/components/Dialog'
 import { RecordEditDialog } from '@/components/RecordEditDialog'
+import { PaymentsDialog } from '@/components/PaymentsDialog'
 import { useToast } from '@/components/Toast'
 import { api, ApiError } from '@/lib/api'
 import { formatCurrency, formatDate, EXPENSE_CATEGORIES } from '@/lib/format'
@@ -29,6 +30,7 @@ export function Ledger() {
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'date', dir: 'desc' })
   const [editing, setEditing] = useState<TdgRecord | null>(null)
   const [deleting, setDeleting] = useState<TdgRecord | null>(null)
+  const [payingRecord, setPayingRecord] = useState<TdgRecord | null>(null)
 
   const load = () => {
     api
@@ -88,17 +90,6 @@ export function Ledger() {
     const qs = params.toString()
     return `/api/export/csv${qs ? `?${qs}` : ''}`
   }, [typeFilter, from, to])
-
-  const togglePaid = async (record: TdgRecord) => {
-    const paid = !record.paid
-    try {
-      const res = await api.put<{ record: TdgRecord }>(`/api/records/${record.id}`, { paid })
-      setRecords((prev) => prev?.map((r) => (r.id === record.id ? res.record : r)) ?? null)
-      show({ tone: 'success', title: paid ? 'Marked as paid' : 'Marked as unpaid' })
-    } catch (err) {
-      show({ tone: 'danger', title: 'Update failed', description: err instanceof ApiError ? err.message : undefined })
-    }
-  }
 
   const handleDelete = async () => {
     if (!deleting) return
@@ -224,7 +215,9 @@ export function Ledger() {
                   <td className="px-4 py-3 text-ink">
                     <div className="flex items-center gap-2">
                       <Badge tone={r.type === 'income' ? 'success' : 'accent'}>{r.type}</Badge>
-                      {r.type === 'income' && !r.paid && <Badge tone="warning">unpaid</Badge>}
+                      {r.type === 'income' && !r.paid && (
+                        <Badge tone="warning">{r.amount_paid > 0 ? 'partial' : 'unpaid'}</Badge>
+                      )}
                       {r.counterparty}
                     </div>
                   </td>
@@ -238,9 +231,11 @@ export function Ledger() {
                     <div className="flex items-center justify-end gap-1">
                       {r.type === 'income' && (
                         <IconButton
-                          aria-label={r.paid ? 'Mark as unpaid' : 'Mark as paid'}
-                          onClick={() => void togglePaid(r)}
-                          className={r.paid ? 'text-success!' : 'text-danger!'}
+                          aria-label="Payments"
+                          onClick={() => setPayingRecord(r)}
+                          className={
+                            r.paid ? 'text-success!' : r.amount_paid > 0 ? 'text-warning!' : 'text-danger!'
+                          }
                         >
                           <CircleDollarSign size={16} />
                         </IconButton>
@@ -266,6 +261,16 @@ export function Ledger() {
           </table>
         )}
       </Card>
+
+      {payingRecord && (
+        <PaymentsDialog
+          record={payingRecord}
+          onClose={() => setPayingRecord(null)}
+          onUpdated={(updated) => {
+            setRecords((prev) => prev?.map((r) => (r.id === updated.id ? updated : r)) ?? null)
+          }}
+        />
+      )}
 
       {editing && (
         <RecordEditDialog

@@ -57,8 +57,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   await env.DB.prepare(
     `INSERT INTO records
-      (id, type, date, counterparty, description, amount, gst_status, gst_amount, category, reference, file_key, file_name, file_hash, paid, created_at, updated_at)
-     VALUES (?, 'income', ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0, ?, ?)`,
+      (id, type, date, counterparty, description, amount, gst_status, gst_amount, category, reference, file_key, file_name, file_hash, paid, amount_paid, created_at, updated_at)
+     VALUES (?, 'income', ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0, 0, ?, ?)`,
   )
     .bind(
       recordId,
