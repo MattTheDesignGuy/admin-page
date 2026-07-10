@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, FileUp, Receipt } from 'lucide-react'
 import { Card } from '@/components/Card'
@@ -72,24 +72,26 @@ export function Dashboard() {
         <p className="text-sm text-ink-muted">Loading…</p>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <StatCard label="Income" value={summary.totals.income} />
             <StatCard label="Expenses" value={summary.totals.expense} />
             <StatCard label="GST collected" value={summary.totals.gst_collected} />
             <StatCard label="GST paid" value={summary.totals.gst_paid} />
+            <StatCard
+              label="Income outstanding"
+              value={summary.outstandingIncome.total}
+              tone="warning"
+              footer={
+                summary.outstandingIncome.count > 0 ? (
+                  <Link to="/ledger" className="text-xs font-medium text-link underline">
+                    {summary.outstandingIncome.count} {summary.outstandingIncome.count === 1 ? 'invoice' : 'invoices'} — view
+                    in ledger
+                  </Link>
+                ) : undefined
+              }
+            />
             <StatCard label="Net" value={summary.totals.net} emphasis />
           </div>
-
-          {summary.outstandingIncome.count > 0 && (
-            <p className="text-sm text-ink-muted">
-              {formatCurrency(summary.outstandingIncome.total)} still outstanding across {summary.outstandingIncome.count}{' '}
-              {summary.outstandingIncome.count === 1 ? 'invoice' : 'invoices'} — not counted above until paid —{' '}
-              <Link to="/ledger" className="font-medium text-link underline">
-                view in ledger
-              </Link>
-              .
-            </p>
-          )}
 
           <Card className="p-6">
             <h2 className="text-h3 mb-4">Income vs. expenses by month</h2>
@@ -101,7 +103,19 @@ export function Dashboard() {
   )
 }
 
-function StatCard({ label, value, emphasis }: { label: string; value: number; emphasis?: boolean }) {
+function StatCard({
+  label,
+  value,
+  emphasis,
+  tone,
+  footer,
+}: {
+  label: string
+  value: number
+  emphasis?: boolean
+  tone?: 'warning'
+  footer?: ReactNode
+}) {
   if (emphasis) {
     return (
       <Card className="bg-action-gradient border-none p-5 text-white">
@@ -113,7 +127,8 @@ function StatCard({ label, value, emphasis }: { label: string; value: number; em
   return (
     <Card className="p-5">
       <p className="text-eyebrow text-ink-faint">{label}</p>
-      <p className="text-h2 mt-1">{formatCurrency(value)}</p>
+      <p className={`text-h2 mt-1 ${tone === 'warning' ? 'text-warning!' : ''}`}>{formatCurrency(value)}</p>
+      {footer && <div className="mt-1">{footer}</div>}
     </Card>
   )
 }
