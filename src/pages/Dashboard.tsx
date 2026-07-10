@@ -11,6 +11,7 @@ interface DashboardSummary {
   fy: { start: string; end: string; label: string; startYear: number }
   isCurrent: boolean
   totals: { income: number; expense: number; gst_collected: number; gst_paid: number; net: number }
+  unpaidIncome: { count: number; total: number }
   monthly: Array<{ month: string; income: number; expense: number }>
 }
 
@@ -78,6 +79,17 @@ export function Dashboard() {
             <StatCard label="GST paid" value={summary.totals.gst_paid} />
             <StatCard label="Net" value={summary.totals.net} emphasis />
           </div>
+
+          {summary.unpaidIncome.count > 0 && (
+            <p className="text-sm text-ink-muted">
+              {formatCurrency(summary.unpaidIncome.total)} across {summary.unpaidIncome.count} unpaid{' '}
+              {summary.unpaidIncome.count === 1 ? 'invoice' : 'invoices'} not counted above —{' '}
+              <Link to="/ledger" className="font-medium text-link underline">
+                view in ledger
+              </Link>
+              .
+            </p>
+          )}
 
           <Card className="p-6">
             <h2 className="text-h3 mb-4">Income vs. expenses by month</h2>

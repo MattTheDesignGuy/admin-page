@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowUpDown, Download, FileText, Pencil, Trash2 } from 'lucide-react'
+import { ArrowUpDown, CircleDollarSign, Download, FileText, Pencil, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Card } from '@/components/Card'
 import { Select } from '@/components/Select'
@@ -71,6 +71,17 @@ export function Ledger() {
     const qs = params.toString()
     return `/api/export/csv${qs ? `?${qs}` : ''}`
   }, [typeFilter, from, to])
+
+  const togglePaid = async (record: TdgRecord) => {
+    const paid = !record.paid
+    try {
+      const res = await api.put<{ record: TdgRecord }>(`/api/records/${record.id}`, { paid })
+      setRecords((prev) => prev?.map((r) => (r.id === record.id ? res.record : r)) ?? null)
+      show({ tone: 'success', title: paid ? 'Marked as paid' : 'Marked as unpaid' })
+    } catch (err) {
+      show({ tone: 'danger', title: 'Update failed', description: err instanceof ApiError ? err.message : undefined })
+    }
+  }
 
   const handleDelete = async () => {
     if (!deleting) return
@@ -172,6 +183,7 @@ export function Ledger() {
                   <td className="px-4 py-3 text-ink">
                     <div className="flex items-center gap-2">
                       <Badge tone={r.type === 'income' ? 'success' : 'accent'}>{r.type}</Badge>
+                      {r.type === 'income' && !r.paid && <Badge tone="warning">unpaid</Badge>}
                       {r.counterparty}
                     </div>
                   </td>
@@ -189,6 +201,15 @@ export function Ledger() {
                             <FileText size={16} />
                           </IconButton>
                         </a>
+                      )}
+                      {r.type === 'income' && (
+                        <IconButton
+                          aria-label={r.paid ? 'Mark as unpaid' : 'Mark as paid'}
+                          onClick={() => void togglePaid(r)}
+                          className={r.paid ? undefined : 'text-warning'}
+                        >
+                          <CircleDollarSign size={16} />
+                        </IconButton>
                       )}
                       <IconButton aria-label="Edit record" onClick={() => setEditing(r)}>
                         <Pencil size={16} />

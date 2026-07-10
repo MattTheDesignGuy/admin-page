@@ -24,6 +24,7 @@ export interface Record {
   file_key: string | null
   file_name: string | null
   file_hash: string | null
+  paid: number
   created_at: string
   updated_at: string
 }

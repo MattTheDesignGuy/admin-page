@@ -6,6 +6,7 @@ import { Input } from '@/components/Input'
 import { Textarea } from '@/components/Textarea'
 import { Select } from '@/components/Select'
 import { Button } from '@/components/Button'
+import { Switch } from '@/components/Switch'
 import { useToast } from '@/components/Toast'
 import { DuplicateWarning, type DuplicateCheck } from '@/components/DuplicateWarning'
 import { api, ApiError } from '@/lib/api'
@@ -18,6 +19,7 @@ interface IncomeForm {
   gst_status: 'free' | 'amount'
   gst_amount: string
   description: string
+  paid: boolean
 }
 
 const emptyForm: IncomeForm = {
@@ -28,6 +30,7 @@ const emptyForm: IncomeForm = {
   gst_status: 'amount',
   gst_amount: '',
   description: '',
+  paid: true,
 }
 
 export function IncomeUpload() {
@@ -69,6 +72,7 @@ export function IncomeUpload() {
         gst_status: e.gst_status ?? 'amount',
         gst_amount: e.gst_amount?.toString() ?? '',
         description: e.description ?? '',
+        paid: true,
       })
       setDuplicate(res.duplicate ?? null)
       if (res.mocked) {
@@ -106,6 +110,7 @@ export function IncomeUpload() {
       body.append('gst_status', form.gst_status)
       body.append('gst_amount', form.gst_amount || '0')
       body.append('reference', form.reference)
+      body.append('paid', form.paid ? '1' : '0')
       body.append('file', file)
       await api.post('/api/records', body)
       show({ tone: 'success', title: 'Income saved', description: `${form.counterparty} — logged to the ledger.` })
@@ -178,6 +183,14 @@ export function IncomeUpload() {
             <Field label="Description">
               <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </Field>
+            <label className="flex items-center gap-3 text-sm font-medium text-ink">
+              <Switch
+                aria-label="Paid"
+                checked={form.paid}
+                onChange={(paid) => setForm({ ...form, paid })}
+              />
+              {form.paid ? 'Paid' : 'Unpaid — won’t count toward this FY’s totals yet'}
+            </label>
             <Button type="submit" size="lg" disabled={saving} className="self-start">
               {saving ? 'Saving…' : 'Save to ledger'}
             </Button>

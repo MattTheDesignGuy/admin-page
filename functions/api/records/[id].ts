@@ -1,4 +1,4 @@
-import type { Env } from '../../lib/types'
+import type { Env, Record as TdgRecord } from '../../lib/types'
 import { json, jsonError } from '../../lib/http'
 
 interface UpdateBody {
@@ -10,11 +10,17 @@ interface UpdateBody {
   gst_amount?: number
   category?: string | null
   reference?: string | null
+  paid?: boolean
 }
 
+// Fields that can legitimately be cleared to null (description, category,
+// reference) need "was this key sent at all" checks, not just `?? null` —
+// otherwise a partial update (e.g. just toggling `paid`) would silently
+// wipe them, since an omitted key and an explicit null look the same once
+// bound as a SQL parameter.
 export const onRequestPut: PagesFunction<Env> = async ({ request, env, params }) => {
   const id = params.id as string
-  const existing = await env.DB.prepare('SELECT id FROM records WHERE id = ?').bind(id).first()
+  const existing = await env.DB.prepare('SELECT * FROM records WHERE id = ?').bind(id).first<TdgRecord>()
   if (!existing) return jsonError(404, 'Record not found')
 
   let body: UpdateBody
@@ -28,28 +34,32 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
     return jsonError(400, 'gst_status must be "free" or "amount"')
   }
 
+  const has = (key: keyof UpdateBody) => Object.prototype.hasOwnProperty.call(body, key)
+
   await env.DB.prepare(
     `UPDATE records SET
-      date = COALESCE(?, date),
-      counterparty = COALESCE(?, counterparty),
+      date = ?,
+      counterparty = ?,
       description = ?,
-      amount = COALESCE(?, amount),
-      gst_status = COALESCE(?, gst_status),
-      gst_amount = COALESCE(?, gst_amount),
+      amount = ?,
+      gst_status = ?,
+      gst_amount = ?,
       category = ?,
       reference = ?,
+      paid = ?,
       updated_at = ?
      WHERE id = ?`,
   )
     .bind(
-      body.date ?? null,
-      body.counterparty ?? null,
-      body.description ?? null,
-      body.amount ?? null,
-      body.gst_status ?? null,
-      body.gst_amount ?? null,
-      body.category ?? null,
-      body.reference ?? null,
+      body.date ?? existing.date,
+      body.counterparty ?? existing.counterparty,
+      has('description') ? body.description : existing.description,
+      body.amount ?? existing.amount,
+      body.gst_status ?? existing.gst_status,
+      body.gst_amount ?? existing.gst_amount,
+      has('category') ? body.category : existing.category,
+      has('reference') ? body.reference : existing.reference,
+      body.paid === undefined ? existing.paid : body.paid ? 1 : 0,
       new Date().toISOString(),
       id,
     )

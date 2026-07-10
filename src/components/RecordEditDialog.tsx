@@ -4,6 +4,7 @@ import { Input } from '@/components/Input'
 import { Textarea } from '@/components/Textarea'
 import { Select } from '@/components/Select'
 import { Button } from '@/components/Button'
+import { Switch } from '@/components/Switch'
 import { api, ApiError } from '@/lib/api'
 import { EXPENSE_CATEGORIES } from '@/lib/format'
 import type { TdgRecord } from '@/lib/records'
@@ -26,6 +27,7 @@ export function RecordEditDialog({
     gst_amount: String(record.gst_amount),
     category: record.category ?? EXPENSE_CATEGORIES[0],
     reference: record.reference ?? '',
+    paid: Boolean(record.paid),
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,6 +46,7 @@ export function RecordEditDialog({
         gst_amount: Number(form.gst_amount) || 0,
         category: record.type === 'expense' ? form.category : null,
         reference: record.type === 'income' ? form.reference || null : null,
+        paid: record.type === 'income' ? form.paid : undefined,
       })
       onSaved(res.record)
     } catch (err) {
@@ -109,6 +112,12 @@ export function RecordEditDialog({
         <Field label="Description">
           <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         </Field>
+        {record.type === 'income' && (
+          <label className="flex items-center gap-3 text-sm font-medium text-ink">
+            <Switch aria-label="Paid" checked={form.paid} onChange={(paid) => setForm({ ...form, paid })} />
+            {form.paid ? 'Paid' : 'Unpaid — excluded from this FY’s totals'}
+          </label>
+        )}
         {error && <p className="rounded-md bg-danger-bg px-3 py-2 text-sm text-danger">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose}>

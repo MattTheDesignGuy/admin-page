@@ -28,9 +28,31 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     .bind(...bindings)
     .all<TdgRecord>()
 
-  let csv = csvRow(['Date', 'Type', 'Counterparty', 'Description', 'Amount', 'GST Status', 'GST Amount', 'Category', 'Reference'])
+  let csv = csvRow([
+    'Date',
+    'Type',
+    'Counterparty',
+    'Description',
+    'Amount',
+    'GST Status',
+    'GST Amount',
+    'Category',
+    'Reference',
+    'Paid',
+  ])
   for (const r of results) {
-    csv += csvRow([r.date, r.type, r.counterparty, r.description, r.amount, r.gst_status, r.gst_amount, r.category, r.reference])
+    csv += csvRow([
+      r.date,
+      r.type,
+      r.counterparty,
+      r.description,
+      r.amount,
+      r.gst_status,
+      r.gst_amount,
+      r.category,
+      r.reference,
+      r.type === 'income' ? (r.paid ? 'Yes' : 'No') : '',
+    ])
   }
 
   return new Response(csv, {
