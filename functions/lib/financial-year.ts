@@ -3,7 +3,7 @@ export function financialYearFromStartYear(year: number): { start: string; end: 
   return {
     start: `${year}-07-01`,
     end: `${year + 1}-06-30`,
-    label: `FY${String(year + 1).slice(-2)}`,
+    label: `FY${String(year).slice(-2)}/${String(year + 1).slice(-2)}`,
     startYear: year,
   }
 }
