@@ -195,13 +195,6 @@ export function Ledger() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
-                      {r.file_key && (
-                        <a href={`/api/files/${r.id}`} target="_blank" rel="noreferrer">
-                          <IconButton aria-label="View original file">
-                            <FileText size={16} />
-                          </IconButton>
-                        </a>
-                      )}
                       {r.type === 'income' && (
                         <IconButton
                           aria-label={r.paid ? 'Mark as unpaid' : 'Mark as paid'}
@@ -210,6 +203,13 @@ export function Ledger() {
                         >
                           <CircleDollarSign size={16} />
                         </IconButton>
+                      )}
+                      {r.file_key && (
+                        <a href={`/api/files/${r.id}`} target="_blank" rel="noreferrer">
+                          <IconButton aria-label="View original file">
+                            <FileText size={16} />
+                          </IconButton>
+                        </a>
                       )}
                       <IconButton aria-label="Edit record" onClick={() => setEditing(r)}>
                         <Pencil size={16} />
