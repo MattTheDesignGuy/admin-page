@@ -64,7 +64,7 @@ export function parseInvoiceDraft(body: unknown): ParsedInvoiceDraft | { error: 
       deposit > 0
         ? typeof b.deposit_label === 'string' && b.deposit_label.trim()
           ? b.deposit_label.trim()
-          : 'Less: Deposit received.'
+          : 'Less: Discount.'
         : null,
     totals,
   }

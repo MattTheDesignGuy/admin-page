@@ -167,7 +167,7 @@ function drawLineItemTable(
   }))
   if (data.deposit > 0) {
     rows.push({
-      description: data.depositLabel ?? 'Less: Deposit received.',
+      description: data.depositLabel ?? 'Less: Discount.',
       qty: '',
       unitPrice: '',
       gst: '',

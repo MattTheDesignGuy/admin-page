@@ -67,7 +67,7 @@ export function InvoiceBuilder() {
   const [addressLines, setAddressLines] = useState('')
   const [lineItems, setLineItems] = useState<LineItemForm[]>([emptyLineItem()])
   const [deposit, setDeposit] = useState('')
-  const [depositLabel, setDepositLabel] = useState('Less: Deposit received.')
+  const [depositLabel, setDepositLabel] = useState('Less: Discount.')
   const [previewing, setPreviewing] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -310,9 +310,9 @@ export function InvoiceBuilder() {
       </Card>
 
       <Card className="flex flex-col gap-4 p-6">
-        <h2 className="text-h3">Deposit (optional)</h2>
+        <h2 className="text-h3">Discount (optional)</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Deposit amount">
+          <Field label="Discount amount">
             <Input type="number" step="0.01" value={deposit} onChange={(e) => setDeposit(e.target.value)} />
           </Field>
           <Field label="Label">
