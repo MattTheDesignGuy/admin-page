@@ -206,7 +206,7 @@ export function Ledger() {
                         <IconButton
                           aria-label={r.paid ? 'Mark as unpaid' : 'Mark as paid'}
                           onClick={() => void togglePaid(r)}
-                          className={r.paid ? undefined : 'text-warning'}
+                          className={r.paid ? 'text-success!' : 'text-danger!'}
                         >
                           <CircleDollarSign size={16} />
                         </IconButton>
