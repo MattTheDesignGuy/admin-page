@@ -179,9 +179,9 @@ export function Ledger() {
           <div className="flex flex-col items-center gap-3 p-10 text-center">
             <p className="text-sm text-ink-muted">Nothing logged yet.</p>
             <div className="flex gap-2">
-              <Link to="/income/new">
+              <Link to="/invoices/new">
                 <Button size="sm" variant="secondary">
-                  Log income
+                  New invoice
                 </Button>
               </Link>
               <Link to="/expenses/new">

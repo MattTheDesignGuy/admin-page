@@ -1,8 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, FileUp, Receipt } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Card } from '@/components/Card'
-import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { formatCurrency } from '@/lib/format'
 import { api } from '@/lib/api'
@@ -31,41 +30,25 @@ export function Dashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-1">
-            <IconButton
-              aria-label="Previous financial year"
-              onClick={() => setYear((summary?.fy.startYear ?? 0) - 1)}
-              disabled={!summary}
-            >
-              <ChevronLeft size={16} />
-            </IconButton>
-            <p className="text-eyebrow text-indigo w-14 text-center">{summary?.fy.label ?? ' '}</p>
-            <IconButton
-              aria-label="Next financial year"
-              onClick={() => setYear((summary?.fy.startYear ?? 0) + 1)}
-              disabled={!summary || summary.isCurrent}
-            >
-              <ChevronRight size={16} />
-            </IconButton>
-          </div>
-          <h1 className="text-h1">Dashboard</h1>
+      <div>
+        <div className="flex items-center gap-1">
+          <IconButton
+            aria-label="Previous financial year"
+            onClick={() => setYear((summary?.fy.startYear ?? 0) - 1)}
+            disabled={!summary}
+          >
+            <ChevronLeft size={16} />
+          </IconButton>
+          <p className="text-eyebrow text-indigo w-14 text-center">{summary?.fy.label ?? ' '}</p>
+          <IconButton
+            aria-label="Next financial year"
+            onClick={() => setYear((summary?.fy.startYear ?? 0) + 1)}
+            disabled={!summary || summary.isCurrent}
+          >
+            <ChevronRight size={16} />
+          </IconButton>
         </div>
-        <div className="flex gap-2">
-          <Link to="/income/new">
-            <Button variant="secondary">
-              <FileUp size={16} />
-              Log income
-            </Button>
-          </Link>
-          <Link to="/expenses/new">
-            <Button variant="secondary">
-              <Receipt size={16} />
-              Log expense
-            </Button>
-          </Link>
-        </div>
+        <h1 className="text-h1">Dashboard</h1>
       </div>
 
       {!summary ? (
