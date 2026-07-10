@@ -37,3 +37,52 @@ export const EXPENSE_CATEGORIES = [
   'Professional fees',
   'Other',
 ] as const
+
+export interface LineItem {
+  description: string
+  qty: number
+  unit_price: number
+  gst: 'Free' | number
+}
+
+export interface Client {
+  id: string
+  business_name: string
+  attention: string | null
+  address_lines: string | null // JSON string array
+  created_at: string
+  updated_at: string
+}
+
+export interface Invoice {
+  id: string
+  invoice_number: string
+  client_id: string
+  invoice_date: string
+  due_date: string
+  reference: string | null
+  line_items: string // JSON LineItem[]
+  deposit: number
+  deposit_label: string | null
+  subtotal: number
+  gst_total: number
+  total: number
+  amount_due: number
+  file_key: string
+  record_id: string
+  created_at: string
+}
+
+export interface InvoiceDraft {
+  invoice_date: string
+  due_date?: string
+  reference?: string | null
+  bill_to: {
+    business_name: string
+    attention?: string | null
+    address_lines?: string[]
+  }
+  line_items: LineItem[]
+  deposit?: number
+  deposit_label?: string | null
+}

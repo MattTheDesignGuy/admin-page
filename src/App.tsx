@@ -8,6 +8,7 @@ import { Dashboard } from '@/pages/Dashboard'
 import { IncomeUpload } from '@/pages/IncomeUpload'
 import { ExpenseUpload } from '@/pages/ExpenseUpload'
 import { Ledger } from '@/pages/Ledger'
+import { InvoiceBuilder } from '@/pages/InvoiceBuilder'
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { status } = useAuth()
@@ -60,6 +61,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ExpenseUpload />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/invoices/new"
+        element={
+          <ProtectedRoute>
+            <InvoiceBuilder />
           </ProtectedRoute>
         }
       />

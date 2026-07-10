@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, FileUp, Receipt, Table2, LogOut } from 'lucide-react'
+import { LayoutDashboard, FileUp, FilePlus, Receipt, Table2, LogOut } from 'lucide-react'
 import { Logo } from './Logo'
 import { cn } from '@/lib/cn'
 import { useAuth } from '@/lib/auth'
@@ -9,6 +9,7 @@ const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/income/new', label: 'Log income', icon: FileUp },
   { to: '/expenses/new', label: 'Log expense', icon: Receipt },
+  { to: '/invoices/new', label: 'New invoice', icon: FilePlus },
   { to: '/ledger', label: 'Ledger', icon: Table2 },
 ]
 

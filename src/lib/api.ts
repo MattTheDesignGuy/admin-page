@@ -42,4 +42,23 @@ export const api = {
       body: body instanceof FormData ? body : body !== undefined ? JSON.stringify(body) : undefined,
     }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  postForBlob: async (path: string, body: unknown): Promise<Blob> => {
+    const res = await fetch(path, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) {
+      let message = res.statusText
+      try {
+        const data = (await res.json()) as { error?: string }
+        message = data.error ?? message
+      } catch {
+        // response had no JSON body
+      }
+      throw new ApiError(res.status, message)
+    }
+    return res.blob()
+  },
 }
