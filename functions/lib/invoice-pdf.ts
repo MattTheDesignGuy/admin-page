@@ -1,6 +1,7 @@
-import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage, type RGB } from 'pdf-lib'
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage, type PDFPage, type RGB } from 'pdf-lib'
 import type { LineItem } from './types'
 import { lineItemAmount } from './invoice-calc'
+import { LOGO_BADGE_PNG_BASE64 } from './assets/logo-badge'
 
 const PAGE_WIDTH = 595.28
 const PAGE_HEIGHT = 841.89
@@ -47,8 +48,9 @@ export async function generateInvoicePdf(data: InvoicePdfData): Promise<Uint8Arr
   const page = doc.addPage([PAGE_WIDTH, PAGE_HEIGHT])
   const font = await doc.embedFont(StandardFonts.Helvetica)
   const bold = await doc.embedFont(StandardFonts.HelveticaBold)
+  const logo = await doc.embedPng(base64ToBytes(LOGO_BADGE_PNG_BASE64))
 
-  drawHeader(page, font, bold, data)
+  drawHeader(page, font, bold, logo, data)
   const afterMeta = drawBillToAndMeta(page, font, bold, data)
   const afterTable = drawLineItemTable(page, font, bold, data, afterMeta - 20)
   const afterTotals = drawPaymentAndTotals(page, font, bold, data, afterTable - 24)
@@ -60,7 +62,7 @@ export async function generateInvoicePdf(data: InvoicePdfData): Promise<Uint8Arr
 
 // ---------- sections ----------
 
-function drawHeader(page: PDFPage, font: PDFFont, bold: PDFFont, data: InvoicePdfData) {
+function drawHeader(page: PDFPage, font: PDFFont, bold: PDFFont, logo: PDFImage, data: InvoicePdfData) {
   const bandHeight = 110
   const y = PAGE_HEIGHT - bandHeight
   drawHorizontalGradient(page, { x: 0, y, width: PAGE_WIDTH, height: bandHeight }, NAVY, PURPLE)
@@ -69,15 +71,14 @@ function drawHeader(page: PDFPage, font: PDFFont, bold: PDFFont, data: InvoicePd
   page.drawCircle({ x: PAGE_WIDTH - 40, y: PAGE_HEIGHT - 20, size: 60, color: rgb(1, 1, 1), opacity: 0.05 })
   page.drawCircle({ x: PAGE_WIDTH - 110, y: PAGE_HEIGHT - 60, size: 36, color: rgb(1, 1, 1), opacity: 0.04 })
 
-  // logo badge (vector placeholder — see plan note on raster logo)
+  // logo badge
   const badgeCenter = { x: MARGIN + 26, y: PAGE_HEIGHT - 55 }
-  page.drawCircle({ x: badgeCenter.x, y: badgeCenter.y, size: 26, color: hex(BRIGHT_PURPLE) })
-  page.drawText('TDG', {
-    x: badgeCenter.x - 13,
-    y: badgeCenter.y - 4,
-    size: 9,
-    font: bold,
-    color: rgb(1, 1, 1),
+  const badgeSize = 52
+  page.drawImage(logo, {
+    x: badgeCenter.x - badgeSize / 2,
+    y: badgeCenter.y - badgeSize / 2,
+    width: badgeSize,
+    height: badgeSize,
   })
 
   const textX = MARGIN + 66
@@ -373,6 +374,13 @@ function formatDate(iso: string): string {
   const [year, month, day] = iso.split('-').map(Number)
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   return `${day} ${months[month - 1]} ${year}`
+}
+
+function base64ToBytes(base64: string): Uint8Array {
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
 }
 
 function hex(value: string): RGB {
