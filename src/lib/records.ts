@@ -14,6 +14,10 @@ export interface TdgRecord {
   file_hash: string | null
   paid: number
   amount_paid: number
+  original_currency: string | null
+  original_amount: number | null
+  fx_rate: number | null
+  fx_rate_date: string | null
   created_at: string
   updated_at: string
 }

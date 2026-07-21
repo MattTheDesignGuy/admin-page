@@ -39,6 +39,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     'Category',
     'Reference',
     'Paid',
+    'Original Currency',
+    'Original Amount',
+    'FX Rate',
+    'FX Rate Date',
   ])
   for (const r of results) {
     csv += csvRow([
@@ -52,6 +56,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       r.category,
       r.reference,
       r.type === 'income' ? (r.paid ? 'Yes' : 'No') : '',
+      r.original_currency,
+      r.original_amount,
+      r.fx_rate,
+      r.fx_rate_date,
     ])
   }
 

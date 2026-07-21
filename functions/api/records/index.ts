@@ -39,6 +39,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const paid = form.get('paid') === '0' ? 0 : 1
   const amountPaid = paid ? Number(amount) : 0
 
+  // Foreign-currency audit trail: only stored when the record was actually
+  // billed in a non-AUD currency. `amount`/`gst_amount` above are always
+  // the already-converted AUD figures.
+  const originalCurrencyRaw = optionalString(form.get('original_currency'))
+  const isForeign = originalCurrencyRaw && originalCurrencyRaw.toUpperCase() !== 'AUD'
+  const originalCurrency = isForeign ? originalCurrencyRaw!.toUpperCase() : null
+  const originalAmount = isForeign ? Number(form.get('original_amount')) || null : null
+  const fxRate = isForeign ? Number(form.get('fx_rate')) || null : null
+  const fxRateDate = isForeign ? optionalString(form.get('fx_rate_date')) : null
+
   const id = crypto.randomUUID()
   let fileKey: string | null = null
   let fileName: string | null = null
@@ -59,8 +69,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   await env.DB.prepare(
     `INSERT INTO records
-      (id, type, date, counterparty, description, amount, gst_status, gst_amount, category, reference, file_key, file_name, file_hash, paid, amount_paid, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, type, date, counterparty, description, amount, gst_status, gst_amount, category, reference, file_key, file_name, file_hash, paid, amount_paid, original_currency, original_amount, fx_rate, fx_rate_date, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -78,6 +88,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       fileHash,
       paid,
       amountPaid,
+      originalCurrency,
+      originalAmount,
+      fxRate,
+      fxRateDate,
       now,
       now,
     )

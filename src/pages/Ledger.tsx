@@ -223,7 +223,15 @@ export function Ledger() {
                   </td>
                   <td className="max-w-64 truncate px-4 py-3 text-ink-muted">{r.description}</td>
                   <td className="px-4 py-3 text-ink-muted">{r.category ?? r.reference ?? '—'}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-ink">{formatCurrency(r.amount)}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right text-ink">
+                    <div className="font-medium">{formatCurrency(r.amount)}</div>
+                    {r.original_currency && r.original_amount != null && (
+                      <div className="text-xs text-ink-muted">
+                        {r.original_currency} {r.original_amount.toFixed(2)}
+                        {r.fx_rate ? ` @ ${r.fx_rate}` : ''}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-ink-muted">
                     {r.gst_status === 'amount' ? formatCurrency(r.gst_amount) : 'Free'}
                   </td>

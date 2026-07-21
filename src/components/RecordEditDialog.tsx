@@ -28,15 +28,46 @@ export function RecordEditDialog({
     category: record.category ?? EXPENSE_CATEGORIES[0],
     reference: record.reference ?? '',
     paid: Boolean(record.paid),
+    currency: record.original_currency ?? 'AUD',
+    originalAmount: record.original_amount != null ? String(record.original_amount) : '',
+    fxRate: record.fx_rate != null ? String(record.fx_rate) : '',
+    fxRateDate: record.fx_rate_date ?? '',
   })
   const [saving, setSaving] = useState(false)
+  const [fetchingRate, setFetchingRate] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const isForeign = form.currency.trim().toUpperCase() !== 'AUD'
+
+  const refreshRate = async () => {
+    const currency = form.currency.trim().toUpperCase()
+    if (!currency || currency === 'AUD' || !form.date) return
+    setFetchingRate(true)
+    try {
+      const res = await api.get<{ fx: { currency: string; rate: number; rateDate: string } }>(
+        `/api/fx/rate?currency=${currency}&date=${form.date}`,
+      )
+      const originalAmount = Number(form.originalAmount) || 0
+      setForm({
+        ...form,
+        currency,
+        fxRate: res.fx.rate.toString(),
+        fxRateDate: res.fx.rateDate,
+        amount: originalAmount ? (originalAmount * res.fx.rate).toFixed(2) : form.amount,
+      })
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Rate lookup failed.')
+    } finally {
+      setFetchingRate(false)
+    }
+  }
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     setSaving(true)
     setError(null)
     try {
+      const currency = form.currency.trim().toUpperCase()
       const res = await api.put<{ record: TdgRecord }>(`/api/records/${record.id}`, {
         date: form.date,
         counterparty: form.counterparty,
@@ -47,6 +78,10 @@ export function RecordEditDialog({
         category: record.type === 'expense' ? form.category : null,
         reference: record.type === 'income' ? form.reference || null : null,
         paid: record.type === 'income' ? form.paid : undefined,
+        original_currency: currency && currency !== 'AUD' ? currency : null,
+        original_amount: currency && currency !== 'AUD' ? Number(form.originalAmount) || null : null,
+        fx_rate: currency && currency !== 'AUD' ? Number(form.fxRate) || null : null,
+        fx_rate_date: currency && currency !== 'AUD' ? form.fxRateDate || form.date : null,
       })
       onSaved(res.record)
     } catch (err) {
@@ -66,7 +101,15 @@ export function RecordEditDialog({
           <Field label="Date">
             <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
           </Field>
-          <Field label="Amount (AUD)">
+          <Field label="Currency">
+            <Input
+              value={form.currency}
+              maxLength={3}
+              onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })}
+              className="uppercase"
+            />
+          </Field>
+          <Field label={isForeign ? 'Amount (AUD, converted)' : 'Amount (AUD)'}>
             <Input
               type="number"
               step="0.01"
@@ -109,6 +152,28 @@ export function RecordEditDialog({
             </Field>
           )}
         </div>
+        {isForeign && (
+          <div className="flex flex-col gap-3 rounded-md border border-hairline-subtle bg-surface-sunken p-4">
+            <Field label={`Original amount (${form.currency})`}>
+              <Input
+                type="number"
+                step="0.01"
+                value={form.originalAmount}
+                onChange={(e) => setForm({ ...form, originalAmount: e.target.value })}
+              />
+            </Field>
+            <div className="flex items-center justify-between gap-3 text-sm text-ink-muted">
+              <span>
+                {form.fxRate
+                  ? `1 ${form.currency} = ${form.fxRate} AUD on ${form.fxRateDate} (ECB via Frankfurter)`
+                  : 'No rate on file for this record yet.'}
+              </span>
+              <Button type="button" variant="secondary" size="sm" onClick={() => void refreshRate()} disabled={fetchingRate}>
+                {fetchingRate ? 'Fetching…' : form.fxRate ? 'Refresh rate' : 'Fetch rate'}
+              </Button>
+            </div>
+          </div>
+        )}
         <Field label="Description">
           <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         </Field>

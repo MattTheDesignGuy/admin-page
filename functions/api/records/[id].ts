@@ -11,6 +11,10 @@ interface UpdateBody {
   category?: string | null
   reference?: string | null
   paid?: boolean
+  original_currency?: string | null
+  original_amount?: number | null
+  fx_rate?: number | null
+  fx_rate_date?: string | null
 }
 
 // Fields that can legitimately be cleared to null (description, category,
@@ -45,6 +49,16 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
   const amountPaid = has('paid') ? (body.paid ? amount : 0) : existing.amount_paid
   const paid = amountPaid >= amount ? 1 : 0
 
+  // Foreign-currency audit trail: an explicit "AUD" (or empty) currency
+  // clears the other fx fields rather than leaving stale original_amount/
+  // fx_rate values behind from a previous edit.
+  const currencyRaw = has('original_currency') ? body.original_currency : existing.original_currency
+  const isForeign = !!currencyRaw && currencyRaw.toUpperCase() !== 'AUD'
+  const originalCurrency = isForeign ? currencyRaw!.toUpperCase() : null
+  const originalAmount = isForeign ? (has('original_amount') ? body.original_amount : existing.original_amount) : null
+  const fxRate = isForeign ? (has('fx_rate') ? body.fx_rate : existing.fx_rate) : null
+  const fxRateDate = isForeign ? (has('fx_rate_date') ? body.fx_rate_date : existing.fx_rate_date) : null
+
   await env.DB.prepare(
     `UPDATE records SET
       date = ?,
@@ -57,6 +71,10 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
       reference = ?,
       paid = ?,
       amount_paid = ?,
+      original_currency = ?,
+      original_amount = ?,
+      fx_rate = ?,
+      fx_rate_date = ?,
       updated_at = ?
      WHERE id = ?`,
   )
@@ -71,6 +89,10 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
       has('reference') ? body.reference : existing.reference,
       paid,
       amountPaid,
+      originalCurrency,
+      originalAmount,
+      fxRate,
+      fxRateDate,
       new Date().toISOString(),
       id,
     )

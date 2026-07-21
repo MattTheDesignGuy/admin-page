@@ -19,6 +19,7 @@ export function mockExpenseExtraction() {
     vendor: 'Sample Vendor',
     date: new Date().toISOString().slice(0, 10),
     amount: 49.99,
+    currency: 'AUD',
     gst_status: 'amount' as const,
     gst_amount: 4.99,
     category: 'Software/subscriptions',
